@@ -1,0 +1,96 @@
+import json
+
+from core.client import Client
+from common.Rsa import rsa
+import allure
+
+class Tenapi(Client):
+    def __init__(self, host, **kwargs):
+        super(Tenapi, self).__init__(host, **kwargs)
+    def method(self,data):
+        rsa_str = self.get_rsa_str()
+        json_data = json.dumps(data)
+        r_data = rsa.rsa_encrypt(data=json_data, all_key=rsa_str)
+        request_data = "{\"keyStr\":\"" + r_data['key'] + "\",\"decryptstring\": " + r_data['Rsa_data'] + "}"
+        return request_data
+
+    def get_rsa_str(self):
+        res=self.get('/api/UserBack/GetRSA')
+        respons_json = json.loads(res.text)
+        rasStr = respons_json["data"]["rasStr"]
+        KeyStr = respons_json["data"]["KeyStr"]
+        return {"rasstr":rasStr,"keystr":KeyStr}
+
+    def get_token(self):
+        data=[{"username": "admin", "userPwd": "123456"}]
+        rsa_str=self.get_rsa_str()
+        herder = {
+            "Content-Type": "application/json; charset=utf-8"
+        }
+        json_data=json.dumps(data)
+        r_data=rsa.rsa_encrypt(data=json_data,all_key=rsa_str)
+        request_data="{\"keyStr\":\""+r_data['key']+"\",\"decryptstring\": "+r_data['Rsa_data']+"}"
+        respons=self.post('/api/UserBack/Login', jsondata=request_data, headers=herder)
+        text = json.loads(respons.text)
+        token1 = text["data"]["toKen"]
+        herder_token = {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "Bearer " + token1
+        }
+        return herder_token
+
+    def add_client(self,data):
+        re_token=self.get_token()
+        re_data=self.method(data)
+        return  self.post('/api/Client/Save', jsondata=re_data, headers=re_token)
+    #
+    def get_client(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.post('/api/Client/GetDataList', jsondata=re_data, headers=re_token)
+
+    def add_people(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.post('/api/People/SavePeople', jsondata=re_data, headers=re_token)
+
+    def get_order_data(self,people):
+        re_token = self.get_token()
+        re_data = self.method(people)
+        return self.post('/api/People/SeePeople', jsondata=re_data, headers=re_token)
+    #
+    def add_order(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.post('/api/Order/AddFinishOrder', jsondata=re_data, headers=re_token)
+
+    def add_generate(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.post('/api/Generate/GenerateBill', jsondata=re_data, headers=re_token)
+
+    def charge_money(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.post('/api/DealRecord/rechargeMoney', jsondata=re_data, headers=re_token)
+
+    def save_distributors(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.post('/api/Distributors/SaveDistributors', jsondata=re_data, headers=re_token)
+
+    def get_DistributorsListAll(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.get('/api/Distributors/GetDistributorsListAll', jsondata=re_data, headers=re_token)
+
+    def bank_code(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        return self.post('/api/Client/GetViewModel', jsondata=re_data, headers=re_token)
+
+    def recharge_import_money(self,data):
+        re_token = self.get_token()
+        re_data = self.method(data)
+        # return self.post('/api/PaymentReceived/Import', jsondata=re_data, headers=re_token)
+
