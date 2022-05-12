@@ -4,7 +4,7 @@ from faker import Faker
 f=Faker(locale='zh-CN')
 class Generate_Data():
     def addclient_data(self):
-        client="跳跳蛙"+ f.company()
+        client=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')+f.company()
         bank_card=str(random.randint(1000000000000000, 9999999999999999))+"QA"
         bank_code = random.randint(6200000000000000, 6299999999999999)
         address=f.address()

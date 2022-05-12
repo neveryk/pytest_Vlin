@@ -1,4 +1,5 @@
 import json
+import time
 from time import sleep
 import pytest
 from testcases.conftest import ten,EXCEL
@@ -30,45 +31,45 @@ class Test_system():
         res = ten.add_client(data_2)
 
 
-    @allure.step('人员管理')
-    def test_addpeople(self):
-        # 增加人员
-        for i in range(0,3):
-            people_data=gen.addpeople_data()
-            data=[{"clientID": [int(company_code)], "peopleName": people_data["peoplename"], "cardType": "0", "iDCard": people_data["idcard"], "phone": people_data["phone_num"],"bankName": "建行", "bankCode": people_data["bank_code"], "source": 1, "signFiles": []}]
-            res=ten.add_people(data)
-            res_json=res.json()
-            message=res_json["returnStatus"]
-            assert message==1
-
-    @allure.step('订单管理')
-    def test_add_order(self):
-        # 创建订单
-        get_people=[{"id":int(company_code)}]
-        res_people=ten.get_order_data(get_people)
-        r_j=res_people.json()
-        peoples_datas=[]
-        for i in range(len(r_j["data"])):
-            people_id=r_j["data"][i]["id"]
-            p={"name": "peopleID", "value": "", "peopleID": people_id, "amt": random.randint(1,500)}
-            peoples_datas.append(p)
-        data=[{"clientID":2894,"sceneCode":142,"orderName":"CSC-SUP","content":"000","closeType":1,"totalFee":9,"clientRate":6,"personRate":3,"sceneName":"CJ2105180004-工程服务-工程测量辅助服务","sceneType":0,"peopleDatas":[{"name":"peopleID","value":"","peopleID":"people_id","amt":"o"}]}]
-        data[0]["peopleDatas"]=peoples_datas
-        res=ten.add_order(data)
-        res_json=res.json()
-        global order_number
-        order_number=res_json["data"]
-        order_message=res_json["message"]
-        assert order_message=='保存成功'
-
-    @allure.step('账单管理')
-    def test_add_generate(self):
-        # 系统端生成账单
-        data=[{"generateCodes":[order_number]}]
-        res=ten.add_generate(data)
-        res_json=res.json()
-        generate_message=res_json["message"]
-        assert generate_message=='生成1笔对账单'
+    # @allure.step('人员管理')
+    # def test_addpeople(self):
+    #     # 增加人员
+    #     for i in range(0,3):
+    #         people_data=gen.addpeople_data()
+    #         data=[{"clientID": [int(company_code)], "peopleName": people_data["peoplename"], "cardType": "0", "iDCard": people_data["idcard"], "phone": people_data["phone_num"],"bankName": "建行", "bankCode": people_data["bank_code"], "source": 1, "signFiles": []}]
+    #         res=ten.add_people(data)
+    #         res_json=res.json()
+    #         message=res_json["returnStatus"]
+    #         assert message==1
+    #
+    # @allure.step('订单管理')
+    # def test_add_order(self):
+    #     # 创建订单
+    #     get_people=[{"id":int(company_code)}]
+    #     res_people=ten.get_order_data(get_people)
+    #     r_j=res_people.json()
+    #     peoples_datas=[]
+    #     for i in range(len(r_j["data"])):
+    #         people_id=r_j["data"][i]["id"]
+    #         p={"name": "peopleID", "value": "", "peopleID": people_id, "amt": random.randint(1,500)}
+    #         peoples_datas.append(p)
+    #     data=[{"clientID":int(company_code),"sceneCode":142,"orderName":"CSC-SUP","content":"000","closeType":1,"totalFee":9,"clientRate":6,"personRate":3,"sceneName":"CJ2105180004-工程服务-工程测量辅助服务","sceneType":0,"peopleDatas":[{"name":"peopleID","value":"","peopleID":"people_id","amt":"o"}]}]
+    #     data[0]["peopleDatas"]=peoples_datas
+    #     res=ten.add_order(data)
+    #     res_json=res.json()
+    #     global order_number
+    #     order_number=res_json["data"]
+    #     order_message=res_json["message"]
+    #     assert order_message=='保存成功'
+    #
+    # @allure.step('账单管理')
+    # def test_add_generate(self):
+    #     # 系统端生成账单
+    #     data=[{"generateCodes":[order_number]}]
+    #     res=ten.add_generate(data)
+    #     res_json=res.json()
+    #     generate_message=res_json["message"]
+    #     assert generate_message=='生成1笔对账单'
 
     # @allure.step('企业钱包充值')
     # def test_recharge(self):
@@ -91,6 +92,24 @@ class Test_system():
 #         data=[{"current":1,"pageSize":10}]
 #         res=ten.get_DistributorsListAll(data)
 #         res_json=res.json()
+
+    # @allure.step('获取银行卡号，生成excel')
+    # def test_write_ex(self):
+    #     # 获取银行卡号
+    #     data = [{"id": 2905}]
+    #     res = ten.bank_code(data)
+    #     bank_code = res.json()
+    #     account = bank_code["data"]["CAInfoList"][0]["RemittanceNumber"]
+
+        # 插入excel数据
+        # ex_da = wri.get_data(account)
+        # xls_name = EXCEL + '银行到款.xls'
+
+        # 将数据保存到excel
+        # sheet_name = 'Sheet1'
+        # wri.write_excel_xls(xls_name, sheet_name, ex_da)
+
+
 
     # @allure.step('企业端登录')
     # def test_get_client(self):
@@ -123,25 +142,25 @@ class Test_system():
     #     generate_message = res_json["message"]
     #     assert generate_message == '结算成功'
 
-    @allure.step('获取银行卡号，生成excel')
-    def test_write_ex(self):
-        # 获取银行卡号
-        data=[{"id":2894}]
-        res=ten.bank_code(data)
-        bank_code=res.json()
-        account = bank_code["data"]["CAInfoList"][0]["RemittanceNumber"]
+    # def test_im_data(self):
+    #     url = "http://192.168.8.168:8023/api/PaymentReceived/Import"
+    #
+    #     payload = {"keyStr": "bc2be7e5-e156-40ad-a353-3bdbdafb0607", "decryptstring": [
+    #         'CL8DNabRF1PEyE7y7VEDpHc6nLetOokwtZacsWRFS4FGBBNbatuAuVKe7iWalqgfpisyeS1qMwNTC/hYF9iFVa6MZ3feixGKcFYAmwi3oWB+TDY6y42FDNxKnDm3cPXDcU6aUZBbfMJUSZOVOY6EYRejCntARmjGGkWRcdMnuOE=']}
+    #
+    #     files = [
+    #         ('files', ('银行到款.xls', open('D:/py/pytest_Vlin/data/银行到款.xls', 'rb'), 'application/vnd.ms-excel'))
+    #     ]
+    #     headers = {
+    #         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9zaWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImFkbWluIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiMSIsIklkIjoiMSIsIlVzZXJOYW1lIjoiYWRtaW4iLCJDaGluZXNlTmFtZSI6Iuezu-e7n-euoeeQhuWRmCIsIlVzZXJUeXBlIjoiQmFjayIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvdXNlcmRhdGEiOiJ7XCJ1c2VyTmFtZVwiOlwiYWRtaW5cIixcImNoaW5lc2VOYW1lXCI6XCLns7vnu5_nrqHnkIblkZhcIixcInBob25lXCI6XCIxODk3NTg2MjIyMVwiLFwic3RhdHVzXCI6MSxcInN0YWZmSURcIjoxLFwiaWRcIjoxLFwidXNlclR5cGVcIjpcIkJhY2tcIixcImRlcGFydG1lbnRJRFwiOjEsXCJzdGFmZlR5cGVcIjoxLFwiaXNJaWFjXCI6ZmFsc2UsXCJpc0F1dGhlbnRpY2F0aW9uXCI6ZmFsc2V9IiwibmJmIjoxNjM2MDkyODU1LCJleHAiOjE2MzYxMjE2NTUsImlzcyI6IkFzc2lnbmluZ0pvYiIsImF1ZCI6ImFkbWluIn0.KMZl_FgwkdDH-H_qKJIeSNo-_U6Z0Y-VtG7VT06dbvA'}
+    #
+    #     response = requests.post(url, headers=headers, data=payload, files=files)
+        #
+        # print(response.text)
+        # data=[{"fileType": 0}]
+        # ten.tu_le(data)
 
-        # 插入excel数据
-        ex_da=wri.get_data(account)
-        xls_name = EXCEL+'银行到款.xls'
-
-        # 将数据保存到excel
-        sheet_name = 'Sheet1'
-        wri.write_excel_xls(xls_name, sheet_name, ex_da)
-
-
-
-t=Test_system()
+# t=Test_system()
 # t.test_addclient()
 # t.test_addpeople()
 # t.test_add_order()
@@ -149,9 +168,9 @@ t=Test_system()
 # t.test_recharge()
 # t.test_savedistrbutors()
 # t.test_GetDistributorsListAll()
-t.test_write_ex()
-
+# t.test_write_ex()
 # b=B_client()
-# b.test_get_client()
-# b.test_check_generate()
-# b.test_close_bill()
+# t.test_get_client()
+# t.test_check_generate()
+# t.test_close_bill()
+# t.test_im_data()

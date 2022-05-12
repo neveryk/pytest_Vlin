@@ -22,7 +22,6 @@ class Rsa_Encryption():
                 cipher_text = base64.b64encode(cipher.encrypt(data_li.encode())).decode()
                 requests_data.append(cipher_text)
             str_requests_data=str(requests_data)
-
         return {"Rsa_data":str_requests_data,"key":all_key["keystr"]}
 
 

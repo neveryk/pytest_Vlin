@@ -1,4 +1,7 @@
 import json
+from ast import literal_eval
+
+import requests
 
 from core.client import Client
 from common.Rsa import rsa
@@ -12,6 +15,13 @@ class Tenapi(Client):
         json_data = json.dumps(data)
         r_data = rsa.rsa_encrypt(data=json_data, all_key=rsa_str)
         request_data = "{\"keyStr\":\"" + r_data['key'] + "\",\"decryptstring\": " + r_data['Rsa_data'] + "}"
+        return request_data
+
+    def excel_method(self,data):
+        rsa_str = self.get_rsa_str()
+        json_data = json.dumps(data)
+        r_data = rsa.rsa_encrypt(data=json_data, all_key=rsa_str)
+        request_data = {"keyStr":r_data['key'] ,"decryptstring": r_data['Rsa_data']}
         return request_data
 
     def get_rsa_str(self):
@@ -30,6 +40,7 @@ class Tenapi(Client):
         json_data=json.dumps(data)
         r_data=rsa.rsa_encrypt(data=json_data,all_key=rsa_str)
         request_data="{\"keyStr\":\""+r_data['key']+"\",\"decryptstring\": "+r_data['Rsa_data']+"}"
+        print(request_data)
         respons=self.post('/api/UserBack/Login', jsondata=request_data, headers=herder)
         text = json.loads(respons.text)
         token1 = text["data"]["toKen"]
@@ -89,8 +100,35 @@ class Tenapi(Client):
         re_data = self.method(data)
         return self.post('/api/Client/GetViewModel', jsondata=re_data, headers=re_token)
 
-    def recharge_import_money(self,data):
+    def tu_le(self,data):
+        files = [
+            ('files', ('银行到款.xls', open('D:/py/pytest_Vlin/data/银行到款.xls', 'rb'), 'application/vnd.ms-excel'))
+        ]
+
         re_token = self.get_token()
-        re_data = self.method(data)
-        # return self.post('/api/PaymentReceived/Import', jsondata=re_data, headers=re_token)
+        token={"Authorization":re_token["Authorization"],"Content-Type":"multipart/form-data;"}
+
+        re_data = self.excel_method(data)
+
+        a=re_data["decryptstring"]
+
+        b=literal_eval(a)
+
+        re_data["decryptstring"]=b
+
+        print(re_data)
+
+
+
+        # requ_data["file"]=len(files)
+
+
+
+        url = "http://192.168.8.168:8023/api/PaymentReceived/Import"
+
+
+
+        response = requests.post(url, headers=token, data=re_data,files=files)
+
+        print(response.text)
 
